@@ -21,21 +21,28 @@ export class FileParserComponent {
   public uploadFile(): void {
     let fileReader = new FileReader();
     fileReader.onload = (e) => {
-      let fileContent = fileReader.result;
-      if(this.getFileType(this.file) === FileType.Csv){
-        this.extractCsvData(fileContent);
-      } else{
-        //requires typings
-        // todo implemenation
+        let fileContent = fileReader.result.toString();
+        let jsonResult = this.fileParserService.parseFileToJson(fileContent.toString(), FileType.Csv);
+        this.headerCols = Object.keys(jsonResult[0]);
+        jsonResult.forEach((item: any) => {
+          let values: any[] = [];
+          values = Object.keys(item).map((key) => item[key]);
+          this.rowData.push(values);
+        });
+      // if(this.getFileType(this.file) === FileType.Csv){
+      //   this.extractCsvData(fileContent);
+      // } else{
+      //   //requires typings
+      //   // todo implemenation
 
-      }
+      // }
       
     }
 
     fileReader.readAsText(this.file);
   }
 
-  private extractCsvData(fileContent: string | ArrayBuffer) {
+  private extractCsvData(fileContent: string) {
     let jsonResult = this.fileParserService.parseFileToJson(fileContent.toString(), FileType.Csv);
     this.headerCols = Object.keys(jsonResult[0]);
     jsonResult.forEach((item: any) => {
