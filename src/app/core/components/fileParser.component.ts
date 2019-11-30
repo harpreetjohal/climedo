@@ -3,7 +3,6 @@ import { Title } from "@angular/platform-browser";
 import { Localization } from 'src/app/shared/localization/localization';
 import { FileParserService } from '../services/fileParser.service';
 import { FileType } from '../models/fileType.enum';
-import * as XLSX from 'xlsx';
 import { CustomData } from '../models/customData.model';
 
 @Component({
