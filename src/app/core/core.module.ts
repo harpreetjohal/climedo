@@ -4,9 +4,11 @@ import { CoreComponent } from "./core.component";
 import { coreRouting } from "./core.routes";
 import { FileParserComponent } from './components/fileParser.component';
 import { FileParserService } from './services/fileParser.service';
+import { CommonModule } from "@angular/common";
 
 @NgModule({
     imports: [
+        CommonModule,
         coreRouting,
         SharedModule
     ],

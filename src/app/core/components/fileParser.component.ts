@@ -19,24 +19,19 @@ export class FileParserComponent {
   }
 
   public uploadFile(): void {
+    this.resetData();
     let fileReader = new FileReader();
     fileReader.onload = (e) => {
-        let fileContent = fileReader.result.toString();
-        let jsonResult = this.fileParserService.parseFileToJson(fileContent.toString(), FileType.Csv);
-        this.headerCols = Object.keys(jsonResult[0]);
-        jsonResult.forEach((item: any) => {
-          let values: any[] = [];
-          values = Object.keys(item).map((key) => item[key]);
-          this.rowData.push(values);
-        });
-      // if(this.getFileType(this.file) === FileType.Csv){
-      //   this.extractCsvData(fileContent);
-      // } else{
-      //   //requires typings
-      //   // todo implemenation
+      let fileContent = fileReader.result.toString();
 
-      // }
-      
+      if (this.getFileType(this.file) === FileType.Csv) {
+        this.extractCsvData(fileContent);
+      } else {
+        //requires typings
+        // todo implemenation
+
+      }
+
     }
 
     fileReader.readAsText(this.file);
@@ -75,5 +70,10 @@ export class FileParserComponent {
     } else {
       return FileType.Excel;
     }
+  }
+
+  private resetData(): void {
+    this.headerCols = [];
+    this.rowData = [];
   }
 }
