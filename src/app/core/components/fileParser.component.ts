@@ -3,6 +3,8 @@ import { Title } from "@angular/platform-browser";
 import { Localization } from 'src/app/shared/localization/localization';
 import { FileParserService } from '../services/fileParser.service';
 import { FileType } from '../models/fileType.enum';
+import * as XLSX from 'xlsx';
+import { CustomData } from '../models/customData.model';
 
 @Component({
     templateUrl: './fileParser.component.html',
@@ -12,52 +14,24 @@ export class FileParserComponent {
   private file: File = null;
   public headerCols: string[] = [];
   public rowData: any[] = [];
+  public customDataList : CustomData[] = [];
 
   public constructor(private title: Title,
     private fileParserService: FileParserService) {
     title.setTitle(Localization.getString("fileParserPageTitle"));
+
   }
 
   public uploadFile(): void {
     this.resetData();
     let fileReader = new FileReader();
-    fileReader.onload = (e) => {
+    fileReader.onload = (event) => {
       let fileContent = fileReader.result.toString();
-
-      if (this.getFileType(this.file) === FileType.Csv) {
-        this.extractCsvData(fileContent);
-      } else {
-        //requires typings
-        // todo implemenation
-
-      }
-
+      this.customDataList = this.fileParserService.parseFileToJson(fileContent.toString(), this.getFileType(this.file));
     }
 
-    fileReader.readAsText(this.file);
+    fileReader.readAsBinaryString(this.file);
   }
-
-  private extractCsvData(fileContent: string) {
-    let jsonResult = this.fileParserService.parseFileToJson(fileContent.toString(), FileType.Csv);
-    this.headerCols = Object.keys(jsonResult[0]);
-    jsonResult.forEach((item: any) => {
-      let values: any[] = [];
-      values = Object.keys(item).map((key) => item[key]);
-      this.rowData.push(values);
-    });
-  }
-
-  // private extractExcelDate(fileContent: string){
-  //     const bstr: string = fileContent;
-  //     const wb: XLSX.WorkBook = XLSX.read(bstr, {type: 'binary'});
-
-  //     /* grab first sheet */
-  //     const wsname: string = wb.SheetNames[0];
-  //     const ws: XLSX.WorkSheet = wb.Sheets[wsname];
-
-  //     /* save data */
-  //     this.data = <AOA>(XLSX.utils.sheet_to_json(ws, {header: 1}));
-  // }
 
   public onFileChange(evt: any): void {
     this.file = evt.target.files[0];

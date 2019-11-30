@@ -1,5 +1,7 @@
 import { Injectable } from "@angular/core";
 import { FileType } from '../models/fileType.enum';
+import * as XLSX from 'xlsx';
+import { CustomData } from '../models/customData.model';
 
 @Injectable()
 export class FileParserService {
@@ -8,41 +10,81 @@ export class FileParserService {
 
     }
 
-    public parseFileToJson(fileContent:string , fileType: FileType): any{
+    public parseFileToJson(fileContent:string , fileType: FileType): CustomData[]{
         this.isBusy = true;
-        let jsonObject :object = null;
+        let customDataList : CustomData[] = [];
 
         if(fileType === FileType.Csv){
-            jsonObject = this.convertCsvToJson(fileContent);
+            customDataList = this.convertCsvToJson(fileContent);
         } else{
-            jsonObject = this.convertExcelToJson(fileContent);
+            customDataList = this.convertExcelToJson(fileContent);
         }
 
         this.isBusy = false;
-        return jsonObject;
+        return customDataList;
     }
 
-    private convertExcelToJson(fileContent: string): any {
-        throw new Error("Method not implemented.");
-    }
+    private convertExcelToJson(data: string): CustomData[] {
+        let workBook = null;
+        let jsonData = null;
+        let customDataList : CustomData[] = [];
+        
+        workBook = XLSX.read(data, { type: 'binary' });
 
-    public convertCsvToJson(csvFileContent:string): any {
-        let lines = csvFileContent.split("\n");
-        let result = [];
-        let headers = lines[0].split(",");
-    
-        for (let i = 1; i < lines.length; i++) {
-    
-            let obj = {};
-            let currentline = lines[i].split(",");
-    
-            for (let j = 0; j < headers.length; j++) {
-                obj[headers[j]] = currentline[j];
+        jsonData = workBook.SheetNames.reduce((initial, name) => {
+            let customData : CustomData = new CustomData();
+            customData.name = name;
+            const sheet = workBook.Sheets[name];
+            let jsonResult = XLSX.utils.sheet_to_json(sheet);
+
+            if(jsonResult && jsonResult.length > 0)
+            {
+                customData.headers = Object.keys(jsonResult[0]);
+                customData.rows = [];
+
+                jsonResult.forEach((item: any) => {
+                  let values: any[] = [];
+                  values = Object.keys(item).map((key) => item[key]);
+                  customData.rows.push(values);
+                });
+
+                customDataList.push(customData);
             }
-    
-            result.push(obj);
+            
+        }, {});
+      
+      return customDataList;
+    }
+
+    public convertCsvToJson(csvFileContent:string): CustomData[] {
+        let customDataList : CustomData[] = [];
+        let customData = new CustomData();
+        let lines = csvFileContent.split("\n");
+        customData.name ='Csv';
+
+        if(lines &&  lines.length > 0)
+        {
+            customData.headers = lines[0].split(",");
+            customData.rows = [];
+        
+            for (let i = 1; i < lines.length; i++) {
+
+                let row = [];
+                let currentline = lines[i].split(",");
+                let headersCount = customData.headers.length;
+
+                if(headersCount === currentline.length){
+
+                    for (let j = 0; j < headersCount; j++) {
+                        row[j] = currentline[j];
+                    }
+            
+                    customData.rows.push(row);
+                }
+            }
         }
-    
-        return result; 
+
+        customDataList.push(customData);
+        return customDataList; 
     }
 }

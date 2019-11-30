@@ -3,8 +3,8 @@
     <form role="form">
       <div class="form-group">
         <label for="fileUpload">{{"selectFileLabel" |loc}}</label>
-        <input type="file" accept=".csv,.xls,.xlsx" multiple="false" class="form-control-file" id="fileUpload" aria-describedby="fileUploadHelp"
-          placeholder="Select a file" (change)="onFileChange($event)">
+        <input type="file" accept=".csv,.xls,.xlsx"  class="form-control-file" id="fileUpload"
+          aria-describedby="fileUploadHelp" placeholder="Select a file" (change)="onFileChange($event)">
         <small id="fileUploadHelp" class="form-text text-muted">{{"fileUploadHelpText" |loc}}</small>
       </div>
       <button type="button" [disabled]="!file" name="btnUpload" class="btn btn-success"
@@ -13,25 +13,39 @@
   </div>
   <div class="row mt-3">
     <div class="col-sm-12">
-        {{"resultPreviewHeadingText" |loc}}
+      {{"resultPreviewHeadingText" |loc}}
     </div>
   </div>
   <div class="row">
-      <div class="col-sm-12">
-        <div class="container">
-            <table class="table table-striped">
+    <div class="col-sm-12">
+      <div class="container">
+        <!-- Nav tabs -->
+
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item" *ngFor="let customData of customDataList;let i = index;">
+            <a class="nav-link" [class.active]="i === 0" href="#{{customData.name}}{{i}}" role="tab" data-toggle="tab">{{customData.name}}</a>
+          </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content">
+          <div role="tabpanel" [ngClass]="i === 0 ? ' fade in active show' : 'fade'" *ngFor="let customData of customDataList;let i = index;" class="tab-pane "
+            id="{{customData.name}}{{i}}">
+            <table class="table table-bordered mt-3">
               <thead>
-                  <tr>
-                    <th *ngFor="let columnName of headerCols">{{columnName}}</th>
-                  </tr>
+                <tr class="table-active">
+                  <th *ngFor="let columnName of customData.headers">{{columnName}}</th>
+                </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let row of rowData">
-                  <td *ngFor="let column of headerCols;let i = index">{{row[i]}}</td>
+                <tr *ngFor="let row of customData.rows">
+                  <td *ngFor="let column of customData.headers;let i = index">{{row[i]}}</td>
                 </tr>
               </tbody>
             </table>
           </div>
+        </div>
       </div>
+    </div>
   </div>
 </div>
